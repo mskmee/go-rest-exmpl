@@ -7,12 +7,20 @@ import (
 	"go-rest-exmpl/entities"
 	"go-rest-exmpl/pkg/repository"
 	"os"
+	"strconv"
+	"time"
 
+	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 )
 
 type AuthService struct {
 	repo repository.Authorization
+}
+
+type tokenClaims struct {
+	jwt.MapClaims
+	UserID string `json:"user_id"`
 }
 
 func NewAuthService(repo repository.Authorization) *AuthService {
@@ -41,4 +49,47 @@ func (s *AuthService) generatePasswordHash(password string) (string, error) {
 	hash := sha1.New()
 	hash.Write([]byte(password + salt))
 	return fmt.Sprintf("%x", hash.Sum(nil)), nil
+}
+
+func (s *AuthService) GenerateToken(username, password string) (string, error) {
+	passwordHash, err := s.generatePasswordHash(password)
+	if err != nil {
+		return "", err
+	}
+	user, err := s.repo.GetUser(username, passwordHash)
+	if err != nil {
+		return "", err
+	}
+
+	if err := godotenv.Load(); err != nil {
+		return "", err
+	}
+
+	secret := os.Getenv("JWT_SECRET")
+	tokenLifeTime := os.Getenv("JWT_TTL")
+
+	if secret == "" || tokenLifeTime == "" {
+		return "", errors.New("JWT_SECRET or JWT_TTL is not set in environment variables")
+	}
+
+	tokenLifeTimeInt, err := strconv.Atoi(tokenLifeTime)
+	if err != nil {
+		return "", err
+	}
+
+	// Create the token with custom claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
+		MapClaims: jwt.MapClaims{
+			"expiredAt": time.Now().Add(time.Duration(tokenLifeTimeInt) * time.Hour).Unix(),
+			"createdAt": time.Now().Unix(),
+		},
+		UserID: user.Id,
+	})
+
+	signedToken, err := token.SignedString([]byte(secret))
+	if err != nil {
+		return "", err
+	}
+
+	return signedToken, nil
 }

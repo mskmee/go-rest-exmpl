@@ -8,6 +8,7 @@ import (
 
 type Authorization interface {
 	CreateUser(user entities.User) (string, error)
+	GetUser(username, password string) (entities.User, error)
 }
 
 type TodoList interface{}

@@ -6,6 +6,7 @@ import (
 	"go-rest-exmpl/pkg/repository"
 	"go-rest-exmpl/pkg/service"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
@@ -31,9 +32,15 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("Config initialization error %s", err.Error())
 	}
+	dbPortStr := os.Getenv("DB_PORT")
+	dbPort, err := strconv.Atoi(dbPortStr)
+	if err != nil {
+		log.Fatalf("DB_PORT must be integer")
+	}
+
 	db, err := repository.NewPostgresDB(repository.Config{
-		Host:     viper.GetString("db.host"),
-		Port:     viper.GetInt("db.port"),
+		Host:     os.Getenv("DB_HOST"),
+		Port:     dbPort,
 		User:     viper.GetString("db.username"),
 		Password: os.Getenv("DB_PASSWORD"),
 		DBName:   viper.GetString("db.name"),
