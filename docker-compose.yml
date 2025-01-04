@@ -1,0 +1,46 @@
+services:
+  todo-server:
+    build:
+      context: .
+      dockerfile: ./docker/builder.dockerfile
+    working_dir: /app
+    volumes:
+      - .:/app
+    expose:
+      - 8081
+    ports:
+      - "8081:8080"
+    depends_on:
+      - todo-db
+    networks:
+      - api-network
+    # env_file:
+    #   - .testing.env
+
+  todo-db:
+    container_name: todo-db
+    image: postgres:latest
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_SSL=false
+    # env_file:
+    #   - .testing.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/pgdata
+    expose:
+      - 5433
+    ports:
+      - "5433:5432"
+    networks:
+      - api-network
+
+networks:
+  api-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+
