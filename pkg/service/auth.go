@@ -93,3 +93,33 @@ func (s *AuthService) GenerateToken(username, password string) (string, error) {
 
 	return signedToken, nil
 }
+
+func (s *AuthService) ParseToken(stringToken string) (string, error) {
+	token, err := jwt.ParseWithClaims(stringToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if token.Method.Alg() != jwt.SigningMethodHS256.Alg() {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		if err := godotenv.Load(); err != nil {
+			return nil, err
+		}
+
+		secret := os.Getenv("JWT_SECRET")
+		if secret == "" {
+			return nil, errors.New("JWT_SECRET is not set in environment variables")
+		}
+
+		return []byte(secret), nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	claims, ok := token.Claims.(*tokenClaims)
+
+	if !ok {
+		return "", errors.New("token claims are not of type *tokenClaims")
+	}
+
+	return claims.UserID, nil
+}
