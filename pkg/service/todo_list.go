@@ -17,18 +17,22 @@ func (s *TodoService) CreateList(userId string, list entities.TodoList) (string,
 	return s.repository.CreateList(userId, list.Title, list.Description)
 }
 
-// func (s *TodoService) GetLists(userId string) ([]entities.TodoList, error) {
-// 	return s.repository.GetAllLists(userId)
-// }
+func (s *TodoService) GetAllLists() ([]entities.TodoList, error) {
+	return s.repository.GetAllLists()
+}
 
-// func (s *TodoService) GetListById(listId string) (entities.TodoList, error) {
-// 	return s.repository.GetListById(listId)
-// }
+func (s *TodoService) GetUserLists(userId string) ([]entities.TodoList, error) {
+	return s.repository.GetUserLists(userId)
+}
 
-// func (s *TodoService) UpdateList(list entities.TodoList) error {
-// 	return s.repository.UpdateList(list)
-// }
+func (s *TodoService) GetListById(listId string) (entities.TodoList, error) {
+	return s.repository.GetListById(listId)
+}
 
-// func (s *TodoService) DeleteList(listId string) error {
-// 	return s.repository.DeleteList(listId)
-// }
+func (s *TodoService) UpdateList(list entities.TodoList) error {
+	return s.repository.UpdateList(list)
+}
+
+func (s *TodoService) DeleteList(listId string) error {
+	return s.repository.DeleteList(listId)
+}

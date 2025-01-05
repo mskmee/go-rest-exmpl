@@ -37,10 +37,17 @@ func (r *TodoListPostgres) CreateList(userId, title, description string) (string
 	return id, tx.Commit()
 }
 
-func (r *TodoListPostgres) GetAllLists(userId string) ([]entities.TodoList, error) {
+func (r *TodoListPostgres) GetUserLists(userId string) ([]entities.TodoList, error) {
 	var lists []entities.TodoList
-	query := fmt.Sprintf("SELECT id, title, description FROM %s WHERE user_id=$1", todoListsTable)
+	query := fmt.Sprintf("SELECT tl.id, tl.title, tl.description from %s tl INNER JOIN %s ul on tl.id = ul.list_id WHERE ul.user_id=$1", todoListsTable, usersListsTable)
 	err := r.db.Select(&lists, query, userId)
+	return lists, err
+}
+
+func (r *TodoListPostgres) GetAllLists() ([]entities.TodoList, error) {
+	var lists []entities.TodoList
+	query := fmt.Sprintf("SELECT id, title, description FROM %s", todoListsTable)
+	err := r.db.Select(&lists, query)
 
 	return lists, err
 }
@@ -61,21 +68,8 @@ func (r *TodoListPostgres) UpdateList(list entities.TodoList) error {
 }
 
 func (r *TodoListPostgres) DeleteList(listId string) error {
-	tx, err := r.db.Begin()
-	if err != nil {
-		return err
-	}
 	query := fmt.Sprintf("DELETE FROM %s WHERE id=$1", todoListsTable)
-	_, err = tx.Exec(query, listId)
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	query = fmt.Sprintf("DELETE FROM %s WHERE list_id=$1", usersListsTable)
-	_, err = tx.Exec(query, listId)
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	return tx.Commit()
+	_, err := r.db.Exec(query, listId)
+	return err
+
 }

@@ -1,9 +1,9 @@
 package entities
 
 type TodoList struct {
-	Id          string `json:"id"`
-	Title       string `json:"title" binding:"required"`
-	Description string `json:"description"`
+	Id          string `json:"id" db:"id"`
+	Title       string `json:"title" binding:"required" db:"title"`
+	Description string `json:"description" db:"description"`
 }
 
 type UserList struct {

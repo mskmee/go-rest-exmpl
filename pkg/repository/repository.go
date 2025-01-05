@@ -13,10 +13,11 @@ type Authorization interface {
 
 type TodoList interface {
 	CreateList(userId, title, description string) (string, error)
-	// GetAllLists(userId string) ([]entities.TodoList, error)
-	// GetListById(listId string) (entities.TodoList, error)
-	// UpdateList(list entities.TodoList) error
-	// DeleteList(listId string) error
+	GetAllLists() ([]entities.TodoList, error)
+	GetUserLists(userId string) ([]entities.TodoList, error)
+	GetListById(listId string) (entities.TodoList, error)
+	UpdateList(list entities.TodoList) error
+	DeleteList(listId string) error
 }
 
 type TodoItem interface{}
